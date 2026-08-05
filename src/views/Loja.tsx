@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getProducts, 
-  saveProduct, 
-  deleteProduct, 
-  recordSale, 
+import {
+  getProducts,
+  saveProduct,
+  deleteProduct,
+  recordSale,
   getStudents,
-  type Product,
-  type Student
-} from '../db/localDb';
+} from '../db/api';
+import type { Product, Student } from '../db/localDb';
 import { Modal } from '../components/Modal';
 
 interface LojaProps {
@@ -42,13 +41,18 @@ export const Loja: React.FC<LojaProps> = ({ showToast, triggerRefresh, onRefresh
   const [saleStudentId, setSaleStudentId] = useState('');
   const [saleBuyerName, setSaleBuyerName] = useState('');
 
-  const loadData = () => {
-    setProducts(getProducts());
-    setStudents(getStudents().filter(s => s.status !== 'Inativo'));
+  const loadData = async () => {
+    try {
+      const [p, s] = await Promise.all([getProducts(), getStudents()]);
+      setProducts(p);
+      setStudents(s.filter(st => st.status !== 'Inativo'));
+    } catch {
+      showToast('Erro ao carregar produtos ou alunos.', true);
+    }
   };
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [triggerRefresh]);
 
   // Filtros
@@ -81,7 +85,7 @@ export const Loja: React.FC<LojaProps> = ({ showToast, triggerRefresh, onRefresh
   };
 
   // Salva Produto
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prodNome.trim()) {
       showToast('O nome do produto é obrigatório!', true);
@@ -98,21 +102,29 @@ export const Loja: React.FC<LojaProps> = ({ showToast, triggerRefresh, onRefresh
       preco: Number(prodPreco),
       custo: Number(prodCusto),
       estoque: Number(prodEstoque),
-      categoria: prodCategoria
+      categoria: prodCategoria,
     };
 
-    saveProduct(updated);
-    showToast(editingProduct ? 'Produto atualizado!' : 'Produto cadastrado com sucesso!');
-    setIsProductModalOpen(false);
-    onRefresh();
+    try {
+      await saveProduct(updated);
+      showToast(editingProduct ? 'Produto atualizado!' : 'Produto cadastrado com sucesso!');
+      setIsProductModalOpen(false);
+      onRefresh();
+    } catch {
+      showToast('Erro ao salvar produto.', true);
+    }
   };
 
   // Deleta Produto
-  const handleDeleteProduct = (product: Product) => {
+  const handleDeleteProduct = async (product: Product) => {
     if (confirm(`Tem certeza que deseja remover o produto "${product.nome}"?`)) {
-      deleteProduct(product.id);
-      showToast(`Produto "${product.nome}" removido.`);
-      onRefresh();
+      try {
+        await deleteProduct(product.id);
+        showToast(`Produto "${product.nome}" removido.`);
+        onRefresh();
+      } catch {
+        showToast('Erro ao deletar produto.', true);
+      }
     }
   };
 
@@ -127,7 +139,7 @@ export const Loja: React.FC<LojaProps> = ({ showToast, triggerRefresh, onRefresh
   };
 
   // Processa a Venda
-  const handleProcessSale = (e: React.FormEvent) => {
+  const handleProcessSale = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!saleProductId) {
       showToast('Selecione um produto para vender!', true);
@@ -145,19 +157,23 @@ export const Loja: React.FC<LojaProps> = ({ showToast, triggerRefresh, onRefresh
     const targetProduct = products.find(p => p.id === saleProductId);
     if (!targetProduct) return;
 
-    const result = recordSale(
-      saleProductId,
-      Number(saleQuantity),
-      saleBuyerType === 'aluno' ? saleStudentId : undefined,
-      saleBuyerType === 'avulso' ? saleBuyerName.trim() : undefined
-    );
+    try {
+      const result = await recordSale(
+        saleProductId,
+        Number(saleQuantity),
+        saleBuyerType === 'aluno' ? saleStudentId : undefined,
+        saleBuyerType === 'avulso' ? saleBuyerName.trim() : undefined
+      );
 
-    if (result.success) {
-      showToast(result.message);
-      setIsSaleModalOpen(false);
-      onRefresh();
-    } else {
-      showToast(result.message, true);
+      if (result.success) {
+        showToast(result.message);
+        setIsSaleModalOpen(false);
+        onRefresh();
+      } else {
+        showToast(result.message, true);
+      }
+    } catch {
+      showToast('Erro ao processar venda.', true);
     }
   };
 

@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getStudents, 
-  getAttendance, 
-  getTransactions, 
-  getProducts, 
-  addAttendance, 
-  getLocalDateString,
-  type Student,
-  type Attendance,
-  type Transaction,
-  type Product
-} from '../db/localDb';
+import {
+  getStudents,
+  getAttendance,
+  getTransactions,
+  getProducts,
+  addAttendance,
+} from '../db/api';
+import { getLocalDateString, type Student, type Attendance, type Transaction, type Product } from '../db/localDb';
 import { StatCard } from '../components/StatCard';
 import { SVGChart } from '../components/SVGChart';
 
@@ -27,16 +23,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ showToast, triggerRefresh,
   const [products, setProducts] = useState<Product[]>([]);
   const [checkInInput, setCheckInInput] = useState('');
 
-  // Carrega dados do localDb
-  const loadData = () => {
-    setStudents(getStudents());
-    setAttendance(getAttendance());
-    setTransactions(getTransactions());
-    setProducts(getProducts());
+  // Carrega dados da API
+  const loadData = async () => {
+    try {
+      const [s, a, t, p] = await Promise.all([
+        getStudents(),
+        getAttendance(),
+        getTransactions(),
+        getProducts(),
+      ]);
+      setStudents(s);
+      setAttendance(a);
+      setTransactions(t);
+      setProducts(p);
+    } catch {
+      showToast('Erro ao carregar dados do dashboard.', true);
+    }
   };
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [triggerRefresh]);
 
   const todayStr = getLocalDateString();
@@ -53,11 +59,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ showToast, triggerRefresh,
     .reduce((sum, t) => sum + t.valor, 0);
 
   // Manipula check-in rápido
-  const handleQuickCheckIn = (e: React.FormEvent) => {
+  const handleQuickCheckIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!checkInInput.trim()) return;
 
-    // Busca o aluno por Matrícula (ID) ou Nome exato/parcial
     const searchTerm = checkInInput.trim().toLowerCase();
     const foundStudent = students.find(
       s => s.id === searchTerm || s.nome.toLowerCase().includes(searchTerm)
@@ -68,13 +73,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ showToast, triggerRefresh,
       return;
     }
 
-    const result = addAttendance(foundStudent.id);
-    if (result.success) {
-      showToast(result.message);
-      setCheckInInput('');
-      onRefresh(); // Atualiza painel global
-    } else {
-      showToast(result.message, true);
+    try {
+      const result = await addAttendance(foundStudent.id);
+      if (result.success) {
+        showToast(result.message);
+        setCheckInInput('');
+        onRefresh();
+      } else {
+        showToast(result.message, true);
+      }
+    } catch {
+      showToast('Erro ao registrar presença. Tente novamente.', true);
     }
   };
 

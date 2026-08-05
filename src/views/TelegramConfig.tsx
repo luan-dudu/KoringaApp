@@ -22,16 +22,19 @@ export const TelegramConfig: React.FC<TelegramConfigProps> = ({ showToast }) => 
 
   // Carrega configuração existente
   useEffect(() => {
-    const config = getTelegramConfig();
-    if (config) {
-      setBotToken(config.botToken);
-      setChatId(config.chatId);
-      setEnabled(config.enabled);
-      setIsConfigured(true);
-    }
+    getTelegramConfig().then(config => {
+      if (config) {
+        setBotToken(config.botToken || '');
+        setChatId(config.chatId || '');
+        setEnabled(!!config.enabled);
+        setIsConfigured(!!(config.botToken && config.chatId));
+      }
+    }).catch(() => {
+      showToast('Erro ao carregar configuração do Telegram.', true);
+    });
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!botToken.trim() || !chatId.trim()) {
       showToast('Preencha o Bot Token e o Chat ID!', true);
       return;
@@ -43,9 +46,13 @@ export const TelegramConfig: React.FC<TelegramConfigProps> = ({ showToast }) => 
       enabled,
     };
 
-    saveTelegramConfig(config);
-    setIsConfigured(true);
-    showToast('Configuração do Telegram salva com sucesso!');
+    try {
+      await saveTelegramConfig(config);
+      setIsConfigured(true);
+      showToast('Configuração do Telegram salva com sucesso!');
+    } catch {
+      showToast('Erro ao salvar configuração do Telegram.', true);
+    }
   };
 
   const handleTest = async () => {

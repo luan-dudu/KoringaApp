@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getTransactions, 
-  saveTransaction, 
-  getClosings, 
-  closeMonth, 
-  getLocalDateString,
-  type Transaction,
-  type MonthlyClosing
-} from '../db/localDb';
+import {
+  getTransactions,
+  saveTransaction,
+  getClosings,
+  closeMonth,
+} from '../db/api';
+import { getLocalDateString, type Transaction, type MonthlyClosing } from '../db/localDb';
 import { StatCard } from '../components/StatCard';
 import { SVGChart } from '../components/SVGChart';
 import { Modal } from '../components/Modal';
@@ -36,13 +34,18 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
   // Estado para visualização de relatórios de fechamento
   const [activeClosingReport, setActiveClosingReport] = useState<MonthlyClosing | null>(null);
 
-  const loadData = () => {
-    setTransactions(getTransactions());
-    setClosings(getClosings());
+  const loadData = async () => {
+    try {
+      const [t, c] = await Promise.all([getTransactions(), getClosings()]);
+      setTransactions(t);
+      setClosings(c);
+    } catch {
+      showToast('Erro ao carregar dados financeiros.', true);
+    }
   };
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [triggerRefresh]);
 
   // Transações filtradas pelo mês selecionado
@@ -60,7 +63,7 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
   const monthlyNet = monthlyIncomes - monthlyExpenses;
 
   // Lida com salvamento de transação manual
-  const handleSaveTransaction = (e: React.FormEvent) => {
+  const handleSaveTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!txDescricao.trim()) {
       showToast('A descrição da transação é obrigatória!', true);
@@ -77,30 +80,38 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
       categoria: txCategoria,
       descricao: txDescricao.trim(),
       valor: Number(txValor),
-      data: txData
+      data: txData,
     };
 
-    saveTransaction(newTx);
-    showToast(`${txTipo} de R$ ${txValor.toFixed(2)} cadastrada com sucesso!`);
-    setIsTxModalOpen(false);
-    
-    // Limpa campos
-    setTxDescricao('');
-    setTxValor(0);
-    setTxData(getLocalDateString());
-    
-    onRefresh();
+    try {
+      await saveTransaction(newTx);
+      showToast(`${txTipo} de R$ ${txValor.toFixed(2)} cadastrada com sucesso!`);
+      setIsTxModalOpen(false);
+
+      // Limpa campos
+      setTxDescricao('');
+      setTxValor(0);
+      setTxData(getLocalDateString());
+
+      onRefresh();
+    } catch {
+      showToast('Erro ao salvar transação.', true);
+    }
   };
 
   // Executa fechamento do mês selecionado
-  const handleCloseMonth = () => {
+  const handleCloseMonth = async () => {
     if (confirm(`Deseja realmente realizar o fechamento financeiro de ${selectedMonth.split('-').reverse().join('/')}? Isso salvará um relatório consolidado.`)) {
-      const result = closeMonth(selectedMonth);
-      if (result.success) {
-        showToast(result.message);
-        onRefresh();
-      } else {
-        showToast(result.message, true);
+      try {
+        const result = await closeMonth(selectedMonth);
+        if (result.success) {
+          showToast(result.message);
+          onRefresh();
+        } else {
+          showToast(result.message, true);
+        }
+      } catch {
+        showToast('Erro ao fechar mês.', true);
       }
     }
   };

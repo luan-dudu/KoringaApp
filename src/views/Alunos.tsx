@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getStudents, 
-  saveStudent, 
-  deleteStudent, 
-  recordPayment, 
-  getLocalDateString,
-  type Student
-} from '../db/localDb';
+import {
+  getStudents,
+  saveStudent,
+  deleteStudent,
+  recordPayment,
+} from '../db/api';
+import { getLocalDateString, type Student } from '../db/localDb';
 import { Modal } from '../components/Modal';
 
 interface AlunosProps {
@@ -17,6 +16,7 @@ interface AlunosProps {
 
 export const Alunos: React.FC<AlunosProps> = ({ showToast, triggerRefresh, onRefresh }) => {
   const [students, setStudents] = useState<Student[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'Todos' | 'Ativo' | 'Pendente' | 'Inativo'>('Todos');
   
@@ -34,12 +34,20 @@ export const Alunos: React.FC<AlunosProps> = ({ showToast, triggerRefresh, onRef
   const [formStatus, setFormStatus] = useState<'Ativo' | 'Inativo'>('Ativo');
   const [formModalidades, setFormModalidades] = useState<string[]>([]);
 
-  const loadStudents = () => {
-    setStudents(getStudents());
+  const loadStudents = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getStudents();
+      setStudents(data);
+    } catch {
+      showToast('Erro ao carregar alunos. Verifique a conexão.', true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    loadStudents();
+    void loadStudents();
   }, [triggerRefresh]);
 
   // Atualiza valor padrão da mensalidade ao mudar o plano no formulário
@@ -94,7 +102,7 @@ export const Alunos: React.FC<AlunosProps> = ({ showToast, triggerRefresh, onRef
   };
 
   // Salva cadastro/edição
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formNome.trim()) {
       showToast('O nome do aluno é obrigatório!', true);
@@ -112,45 +120,69 @@ export const Alunos: React.FC<AlunosProps> = ({ showToast, triggerRefresh, onRef
       diaVencimento: Number(formVencimento),
       dataUltimoPagamento: editingStudent ? editingStudent.dataUltimoPagamento : null,
       status: formStatus === 'Inativo' ? 'Inativo' : 'Ativo',
-      modalidades: formModalidades
+      modalidades: formModalidades,
     };
 
-    saveStudent(studentData);
-    showToast(editingStudent ? 'Dados do aluno atualizados!' : 'Aluno cadastrado com sucesso!');
-    setIsModalOpen(false);
-    onRefresh();
+    try {
+      await saveStudent(studentData);
+      showToast(editingStudent ? 'Dados do aluno atualizados!' : 'Aluno cadastrado com sucesso!');
+      setIsModalOpen(false);
+      onRefresh();
+    } catch {
+      showToast('Erro ao salvar aluno. Tente novamente.', true);
+    }
   };
 
   // Confirmação de Pagamento
-  const handleConfirmPayment = (id: string) => {
-    const result = recordPayment(id);
-    if (result.success) {
-      showToast(result.message);
-      onRefresh();
-    } else {
-      showToast(result.message, true);
+  const handleConfirmPayment = async (id: string) => {
+    try {
+      const result = await recordPayment(id);
+      if (result.success) {
+        showToast(result.message);
+        onRefresh();
+      } else {
+        showToast(result.message, true);
+      }
+    } catch {
+      showToast('Erro ao registrar pagamento. Tente novamente.', true);
     }
   };
 
   // Alterna status de Atividade
-  const handleToggleActive = (student: Student) => {
+  const handleToggleActive = async (student: Student) => {
     const updated: Student = {
       ...student,
-      status: student.status === 'Inativo' ? 'Ativo' : 'Inativo'
+      status: student.status === 'Inativo' ? 'Ativo' : 'Inativo',
     };
-    saveStudent(updated);
-    showToast(`Aluno ${student.nome} foi ${updated.status === 'Inativo' ? 'inativado' : 'reativado'}!`);
-    onRefresh();
+    try {
+      await saveStudent(updated);
+      showToast(`Aluno ${student.nome} foi ${updated.status === 'Inativo' ? 'inativado' : 'reativado'}!`);
+      onRefresh();
+    } catch {
+      showToast('Erro ao atualizar status do aluno.', true);
+    }
   };
 
   // Excluir Aluno
-  const handleDelete = (student: Student) => {
+  const handleDelete = async (student: Student) => {
     if (confirm(`Tem certeza que deseja excluir o aluno ${student.nome}? Esta ação é permanente.`)) {
-      deleteStudent(student.id);
-      showToast(`Aluno ${student.nome} excluído.`);
-      onRefresh();
+      try {
+        await deleteStudent(student.id);
+        showToast(`Aluno ${student.nome} excluído.`);
+        onRefresh();
+      } catch {
+        showToast('Erro ao excluir aluno.', true);
+      }
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="students-view animate-fade-in">
+        <p className="no-data">Carregando alunos...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="students-view animate-fade-in">

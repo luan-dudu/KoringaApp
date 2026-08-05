@@ -6,7 +6,6 @@ import { Presenca } from './views/Presenca';
 import { Loja } from './views/Loja';
 import { Financeiro } from './views/Financeiro';
 import { TelegramConfig } from './views/TelegramConfig';
-import { initializeDb } from './db/localDb';
 import { Login } from './views/Login';
 import { checkAndNotifyDuePayments } from './services/telegramService';
 
@@ -18,10 +17,10 @@ interface ToastState {
 
 function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
-  
+
   // Controle de recarregamento reativo
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(false);
-  
+
   // Toast notifications
   const [toast, setToast] = useState<ToastState>({
     message: '',
@@ -43,11 +42,6 @@ function App() {
     setIsAuthenticated(false);
     localStorage.removeItem('koringa_auth');
   };
-
-  // Inicializa o banco de dados local com mock data no primeiro load
-  useEffect(() => {
-    initializeDb();
-  }, []);
 
   // Verifica cobranças do dia e envia via Telegram automaticamente
   useEffect(() => {

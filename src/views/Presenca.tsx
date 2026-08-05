@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getStudents, 
-  getAttendance, 
-  addAttendance, 
-  getLocalDateString,
-  type Student,
-  type Attendance
-} from '../db/localDb';
+import { getStudents, getAttendance, addAttendance } from '../db/api';
+import { getLocalDateString, type Student, type Attendance } from '../db/localDb';
 
 interface PresencaProps {
   showToast: (message: string, isError?: boolean) => void;
@@ -28,13 +22,18 @@ export const Presenca: React.FC<PresencaProps> = ({ showToast, triggerRefresh, o
   const [searchStudentId, setSearchStudentId] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(getLocalDateString().substring(0, 7)); // YYYY-MM
 
-  const loadData = () => {
-    setStudents(getStudents().filter(s => s.status !== 'Inativo'));
-    setAttendance(getAttendance());
+  const loadData = async () => {
+    try {
+      const [s, a] = await Promise.all([getStudents(), getAttendance()]);
+      setStudents(s.filter(st => st.status !== 'Inativo'));
+      setAttendance(a);
+    } catch {
+      showToast('Erro ao carregar dados de presença.', true);
+    }
   };
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [triggerRefresh]);
 
   // Check-ins do dia selecionado
@@ -47,20 +46,24 @@ export const Presenca: React.FC<PresencaProps> = ({ showToast, triggerRefresh, o
   ).sort((a, b) => b.data.localeCompare(a.data));
 
   // Lida com o registro manual de presença
-  const handleRegisterAttendance = (e: React.FormEvent) => {
+  const handleRegisterAttendance = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!checkInStudentId) {
       showToast('Selecione um aluno para registrar a presença!', true);
       return;
     }
 
-    const result = addAttendance(checkInStudentId);
-    if (result.success) {
-      showToast(result.message);
-      setCheckInStudentId('');
-      onRefresh();
-    } else {
-      showToast(result.message, true);
+    try {
+      const result = await addAttendance(checkInStudentId);
+      if (result.success) {
+        showToast(result.message);
+        setCheckInStudentId('');
+        onRefresh();
+      } else {
+        showToast(result.message, true);
+      }
+    } catch {
+      showToast('Erro ao registrar presença. Tente novamente.', true);
     }
   };
 
