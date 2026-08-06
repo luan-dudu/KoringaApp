@@ -490,7 +490,7 @@ export const Alunos: React.FC<AlunosProps> = ({ showToast, triggerRefresh, onRef
                 value={formVencimento}
                 onChange={e => setFormVencimento(Number(e.target.value))}
               >
-                {[1, 5, 10, 15, 20, 25, 28].map(day => (
+                {Array.from({ length: 30 }, (_, i) => i + 1).map(day => (
                   <option key={day} value={day}>Dia {day}</option>
                 ))}
               </select>
