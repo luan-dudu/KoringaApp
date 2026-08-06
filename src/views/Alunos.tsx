@@ -438,7 +438,7 @@ export const Alunos: React.FC<AlunosProps> = ({ showToast, triggerRefresh, onRef
               borderRadius: 'var(--border-radius-md)',
               marginTop: '4px'
             }}>
-              {['Jiu-Jitsu', 'Muay Thai', 'Boxe', 'MMA', 'Karatê', 'Judô'].map(m => (
+              {['MMA', 'Muay Thai', 'Boxe', 'Jiu-Jitsu', 'Muay Thai Feminino', 'Muay Thai Kids', 'Preparação Física', 'Capoeira'].map(m => (
                 <label key={m} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-main)' }}>
                   <input
                     type="checkbox"
