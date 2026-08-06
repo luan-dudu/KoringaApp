@@ -154,7 +154,7 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
     <div className="finance-view animate-fade-in">
       <div className="view-header flex-header">
         <div>
-          <h1>Financeiro & Fechamentos</h1>
+          <h1>Financeiro &amp; Fechamentos</h1>
           <p className="section-subtitle">Fluxo de caixa da academia e fechamentos contábeis mensais</p>
         </div>
         <button onClick={() => setIsTxModalOpen(true)} className="btn btn-primary btn-add-tx">
@@ -222,15 +222,15 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
         {/* Fluxo de Caixa (Esquerda) */}
         <div className="left-column">
           <div className="glass-card">
-            <div className="list-header-flex">
+            {/* Header do Livro de Caixa - empilha no mobile */}
+            <div className="livro-caixa-header">
               <h3>Livro de Caixa</h3>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div className="livro-caixa-controls">
                 <input
                   type="month"
-                  className="form-control"
+                  className="form-control livro-month-input"
                   value={selectedMonth}
                   onChange={e => setSelectedMonth(e.target.value)}
-                  style={{ width: '170px' }}
                 />
                 {!isMonthClosed ? (
                   <button onClick={handleCloseMonth} className="btn btn-success btn-sm-action">
@@ -246,13 +246,13 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
               <p className="no-data" style={{ marginTop: '20px' }}>Nenhuma transação financeira registrada neste mês.</p>
             ) : (
               <div className="table-container" style={{ marginTop: '20px' }}>
-                <table className="custom-table">
+                <table className="custom-table fin-table">
                   <thead>
                     <tr>
                       <th>Data</th>
                       <th>Tipo</th>
-                      <th>Categoria</th>
-                      <th>Descrição</th>
+                      <th className="col-hide-sm">Categoria</th>
+                      <th className="col-hide-xs">Descrição</th>
                       <th>Valor</th>
                     </tr>
                   </thead>
@@ -265,8 +265,8 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
                             {t.tipo}
                           </span>
                         </td>
-                        <td>{t.categoria}</td>
-                        <td>
+                        <td className="col-hide-sm">{t.categoria}</td>
+                        <td className="col-hide-xs">
                           <strong>{t.descricao}</strong>
                           {t.detalhes && <span className="tx-details-sub">{t.detalhes}</span>}
                         </td>
@@ -482,6 +482,14 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
           margin-top: 2px;
         }
 
+        .text-success {
+          color: var(--accent-neon);
+        }
+
+        .text-danger {
+          color: var(--accent-danger);
+        }
+
         .flex-header {
           display: flex;
           justify-content: space-between;
@@ -491,13 +499,25 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
           gap: 12px;
         }
 
-        .list-header-flex {
+        /* Header do Livro de Caixa */
+        .livro-caixa-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
           flex-wrap: wrap;
           gap: 10px;
           margin-bottom: 4px;
+        }
+
+        .livro-caixa-controls {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .livro-month-input {
+          width: 170px;
         }
 
         .closings-history-list {
@@ -582,6 +602,11 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
           padding-bottom: 10px;
         }
 
+        /* Tabela financeira - min-width reduzido */
+        .fin-table {
+          min-width: 280px;
+        }
+
         @media (max-width: 768px) {
           .flex-header {
             flex-direction: column;
@@ -591,19 +616,38 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
             width: 100%;
             justify-content: center;
           }
-          .list-header-flex {
+          /* Livro de Caixa header - empilha no mobile */
+          .livro-caixa-header {
             flex-direction: column;
             align-items: flex-start;
           }
-          .list-header-flex > div {
+          .livro-caixa-controls {
             width: 100%;
+            flex-direction: column;
           }
-          .list-header-flex input[type="month"] {
+          .livro-month-input {
             width: 100% !important;
           }
-          .btn-sm-action {
+          .livro-caixa-controls .btn-sm-action {
             width: 100%;
             justify-content: center;
+          }
+          .livro-caixa-controls .badge-inactive {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+            display: flex;
+          }
+          /* Esconde coluna Descrição no mobile (768px) */
+          .col-hide-xs {
+            display: none;
+          }
+        }
+
+        @media (max-width: 480px) {
+          /* Esconde coluna Categoria no mobile pequeno (480px) */
+          .col-hide-sm {
+            display: none;
           }
         }
       `}</style>
