@@ -601,6 +601,10 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
           .list-header-flex input[type="month"] {
             width: 100% !important;
           }
+          .btn-sm-action {
+            width: 100%;
+            justify-content: center;
+          }
         }
       `}</style>
     </div>

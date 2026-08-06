@@ -385,6 +385,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLog
           top: 0;
           left: 0;
           right: 0;
+          width: 100%;
           z-index: 100;
           background: rgba(9, 10, 15, 0.95);
           backdrop-filter: blur(20px);
@@ -394,6 +395,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLog
           align-items: center;
           justify-content: space-between;
           flex-shrink: 0;
+          box-sizing: border-box;
         }
 
         .mobile-brand {

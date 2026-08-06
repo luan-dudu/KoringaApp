@@ -218,7 +218,7 @@ export const Presenca: React.FC<PresencaProps> = ({ showToast, triggerRefresh, o
 
         .flex-1 {
           flex: 1;
-          min-width: 250px;
+          min-width: 0;
         }
 
         .list-header-flex {
@@ -231,6 +231,7 @@ export const Presenca: React.FC<PresencaProps> = ({ showToast, triggerRefresh, o
 
         .date-selector {
           width: 170px;
+          min-width: 0;
         }
 
         .time-badge {
@@ -330,6 +331,23 @@ export const Presenca: React.FC<PresencaProps> = ({ showToast, triggerRefresh, o
         @media (max-width: 768px) {
           .history-filters {
             grid-template-columns: 1fr;
+          }
+          .manual-checkin-form {
+            flex-direction: column;
+          }
+          .flex-1 {
+            min-width: 0;
+            width: 100%;
+          }
+          .date-selector {
+            width: 100% !important;
+          }
+          .list-header-flex {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .list-header-flex .date-selector {
+            width: 100% !important;
           }
         }
       `}</style>
