@@ -157,7 +157,7 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
           <h1>Financeiro & Fechamentos</h1>
           <p className="section-subtitle">Fluxo de caixa da academia e fechamentos contábeis mensais</p>
         </div>
-        <button onClick={() => setIsTxModalOpen(true)} className="btn btn-primary">
+        <button onClick={() => setIsTxModalOpen(true)} className="btn btn-primary btn-add-tx">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
@@ -482,6 +482,24 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
           margin-top: 2px;
         }
 
+        .flex-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+
+        .list-header-flex {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-bottom: 4px;
+        }
+
         .closings-history-list {
           display: flex;
           flex-direction: column;
@@ -536,6 +554,7 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
           font-size: 0.95rem;
           padding: 8px 0;
           border-bottom: 1px solid var(--border-color);
+          gap: 8px;
         }
 
         .report-row:last-child {
@@ -561,6 +580,27 @@ export const Financeiro: React.FC<FinanceiroProps> = ({ showToast, triggerRefres
         .total-row-sub {
           border-bottom: 1.5px solid var(--border-color);
           padding-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+          .flex-header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .btn-add-tx {
+            width: 100%;
+            justify-content: center;
+          }
+          .list-header-flex {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .list-header-flex > div {
+            width: 100%;
+          }
+          .list-header-flex input[type="month"] {
+            width: 100% !important;
+          }
         }
       `}</style>
     </div>

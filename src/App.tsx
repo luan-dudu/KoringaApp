@@ -160,11 +160,11 @@ function App() {
       <div className="glow-orb orb-1"></div>
       <div className="glow-orb orb-2"></div>
 
-      {/* Menu Lateral de Navegação */}
+      {/* Menu Lateral de Navegação (inclui topbar mobile e drawer) */}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
 
       {/* Conteúdo Principal */}
-      <main className="main-content">
+      <main className="main-content" style={{ maxWidth: '100%' }}>
         {renderActiveView()}
       </main>
 

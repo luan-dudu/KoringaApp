@@ -129,6 +129,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, showToast }) => {
           position: relative;
           z-index: 10;
           animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+          margin: 16px;
         }
 
         @keyframes slideUp {
@@ -316,6 +317,20 @@ export const Login: React.FC<LoginProps> = ({ onLogin, showToast }) => {
           border-radius: 100px;
           font-size: 0.75rem;
           font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+          .login-card {
+            padding: 28px 20px;
+            border-radius: 16px;
+          }
+          .login-title {
+            font-size: 1.7rem;
+          }
+          .login-logo-container {
+            width: 72px;
+            height: 72px;
+          }
         }
       `}</style>
     </div>

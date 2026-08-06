@@ -318,10 +318,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ showToast, triggerRefresh,
           display: flex;
           gap: 12px;
           margin-top: 12px;
+          flex-wrap: wrap;
         }
 
         .checkin-form .form-control {
           flex: 1;
+          min-width: 200px;
+        }
+
+        .checkin-form .btn {
+          white-space: nowrap;
+          flex-shrink: 0;
         }
 
         .no-data {

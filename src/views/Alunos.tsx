@@ -231,116 +231,135 @@ export const Alunos: React.FC<AlunosProps> = ({ showToast, triggerRefresh, onRef
         {filteredStudents.length === 0 ? (
           <p className="no-data">Nenhum aluno encontrado para os filtros selecionados.</p>
         ) : (
-          <div className="table-container">
-            <table className="custom-table">
-              <thead>
-                <tr>
-                  <th>Matrícula</th>
-                  <th>Nome</th>
-                  <th>Telefone</th>
-                  <th>Plano</th>
-                  <th>Valor</th>
-                  <th>Vencimento</th>
-                  <th>Último Pagto</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredStudents.map(student => (
-                  <tr key={student.id}>
-                    <td><code>#{student.id}</code></td>
-                    <td>
-                      <strong>{student.nome}</strong>
-                      <div className="student-modalidades-list" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
-                        {student.modalidades && student.modalidades.map(m => (
-                          <span key={m} className="modality-tag" style={{
-                            fontSize: '0.65rem',
-                            background: 'rgba(0, 242, 254, 0.08)',
-                            color: 'var(--accent-cyan)',
-                            border: '1px solid rgba(0, 242, 254, 0.15)',
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            fontWeight: 'bold',
-                            textTransform: 'uppercase'
-                          }}>
-                            {m}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td>{student.telefone}</td>
-                    <td><span className="plan-badge">{student.plano}</span></td>
-                    <td>R$ {student.valorMensalidade.toFixed(2)}</td>
-                    <td>Dia {student.diaVencimento}</td>
-                    <td>{student.dataUltimoPagamento ? student.dataUltimoPagamento.split('-').reverse().join('/') : '-'}</td>
-                    <td>
-                      <span className={`badge badge-${student.status.toLowerCase()}`}>
-                        {student.status === 'Pendente' ? 'Vencido' : student.status}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="actions-cell">
-                        {/* Botão de Receber Pagamento */}
-                        {(student.status === 'Pendente' || student.status === 'Ativo') && (
-                          <button
-                            onClick={() => handleConfirmPayment(student.id)}
-                            className="btn btn-success btn-sm-action"
-                            title="Confirmar Pagamento de Mensalidade"
-                          >
-                            R$ Receber
-                          </button>
-                        )}
-                        
-                        {/* Botão de Editar */}
-                        <button
-                          onClick={() => handleOpenEditModal(student)}
-                          className="btn-icon"
-                          title="Editar Cadastro"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                        </button>
-
-                        {/* Botão de Toggle Inativo/Ativo */}
-                        <button
-                          onClick={() => handleToggleActive(student)}
-                          className={`btn-icon ${student.status === 'Inativo' ? 'reactivate-btn' : 'deactivate-btn'}`}
-                          title={student.status === 'Inativo' ? 'Reativar Aluno' : 'Inativar Aluno'}
-                        >
-                          {student.status === 'Inativo' ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <path d="M20 11.08V12a10 10 0 1 1-5.93-9.14" />
-                              <polyline points="22 4 12 14.01 9 11.01" />
-                            </svg>
-                          ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <circle cx="12" cy="12" r="10" />
-                              <line x1="8" y1="12" x2="16" y2="12" />
-                            </svg>
-                          )}
-                        </button>
-
-                        {/* Botão de Excluir */}
-                        <button
-                          onClick={() => handleDelete(student)}
-                          className="btn-icon delete-btn"
-                          title="Excluir Aluno"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
+          <>
+            {/* Tabela — visível apenas em desktop */}
+            <div className="table-container desktop-table">
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th>Matrícula</th>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Plano</th>
+                    <th>Valor</th>
+                    <th>Venc.</th>
+                    <th>Últ. Pagto</th>
+                    <th>Status</th>
+                    <th>Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredStudents.map(student => (
+                    <tr key={student.id}>
+                      <td><code>#{student.id}</code></td>
+                      <td>
+                        <strong>{student.nome}</strong>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
+                          {student.modalidades && student.modalidades.map(m => (
+                            <span key={m} style={{
+                              fontSize: '0.65rem',
+                              background: 'rgba(0, 242, 254, 0.08)',
+                              color: 'var(--accent-cyan)',
+                              border: '1px solid rgba(0, 242, 254, 0.15)',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontWeight: 'bold',
+                              textTransform: 'uppercase'
+                            }}>
+                              {m}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td>{student.telefone}</td>
+                      <td><span className="plan-badge">{student.plano}</span></td>
+                      <td>R$ {student.valorMensalidade.toFixed(2)}</td>
+                      <td>Dia {student.diaVencimento}</td>
+                      <td>{student.dataUltimoPagamento ? student.dataUltimoPagamento.split('-').reverse().join('/') : '-'}</td>
+                      <td>
+                        <span className={`badge badge-${student.status.toLowerCase()}`}>
+                          {student.status === 'Pendente' ? 'Vencido' : student.status}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="actions-cell">
+                          {(student.status === 'Pendente' || student.status === 'Ativo') && (
+                            <button onClick={() => handleConfirmPayment(student.id)} className="btn btn-success btn-sm-action" title="Confirmar Pagamento">
+                              R$ Receber
+                            </button>
+                          )}
+                          <button onClick={() => handleOpenEditModal(student)} className="btn-icon" title="Editar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          </button>
+                          <button onClick={() => handleToggleActive(student)} className={`btn-icon ${student.status === 'Inativo' ? 'reactivate-btn' : 'deactivate-btn'}`} title={student.status === 'Inativo' ? 'Reativar' : 'Inativar'}>
+                            {student.status === 'Inativo' ? (
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            ) : (
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                            )}
+                          </button>
+                          <button onClick={() => handleDelete(student)} className="btn-icon delete-btn" title="Excluir">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Cards — visível apenas em mobile */}
+            <div className="mobile-cards-list">
+              {filteredStudents.map(student => (
+                <div key={student.id} className="student-mobile-card">
+                  <div className="smc-header">
+                    <div className="smc-info">
+                      <strong className="smc-name">{student.nome}</strong>
+                      <code className="smc-id">#{student.id} · {student.telefone}</code>
+                    </div>
+                    <span className={`badge badge-${student.status.toLowerCase()}`}>
+                      {student.status === 'Pendente' ? 'Vencido' : student.status}
+                    </span>
+                  </div>
+
+                  {student.modalidades && student.modalidades.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {student.modalidades.map(m => (
+                        <span key={m} style={{ fontSize: '0.65rem', background: 'rgba(0,242,254,0.08)', color: 'var(--accent-cyan)', border: '1px solid rgba(0,242,254,0.15)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', textTransform: 'uppercase' }}>{m}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="smc-details">
+                    <div className="smc-detail-row"><span className="smc-label">Plano</span><span className="plan-badge">{student.plano}</span></div>
+                    <div className="smc-detail-row"><span className="smc-label">Mensalidade</span><span className="smc-value">R$ {student.valorMensalidade.toFixed(2)}</span></div>
+                    <div className="smc-detail-row"><span className="smc-label">Vencimento</span><span className="smc-value">Dia {student.diaVencimento}</span></div>
+                    <div className="smc-detail-row"><span className="smc-label">Últ. Pagamento</span><span className="smc-value">{student.dataUltimoPagamento ? student.dataUltimoPagamento.split('-').reverse().join('/') : '—'}</span></div>
+                  </div>
+
+                  <div className="smc-actions">
+                    {(student.status === 'Pendente' || student.status === 'Ativo') && (
+                      <button onClick={() => handleConfirmPayment(student.id)} className="btn btn-success btn-sm-action" style={{ flex: 1 }}>💰 Receber</button>
+                    )}
+                    <button onClick={() => handleOpenEditModal(student)} className="btn-icon" title="Editar">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button onClick={() => handleToggleActive(student)} className={`btn-icon ${student.status === 'Inativo' ? 'reactivate-btn' : 'deactivate-btn'}`}>
+                      {student.status === 'Inativo' ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                      )}
+                    </button>
+                    <button onClick={() => handleDelete(student)} className="btn-icon delete-btn">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
@@ -486,11 +505,14 @@ export const Alunos: React.FC<AlunosProps> = ({ showToast, triggerRefresh, onRef
           justify-content: space-between;
           align-items: center;
           margin-bottom: 24px;
+          flex-wrap: wrap;
+          gap: 12px;
         }
 
         .filter-selects {
           display: flex;
           align-items: center;
+          gap: 8px;
         }
 
         .plan-badge {
@@ -500,17 +522,18 @@ export const Alunos: React.FC<AlunosProps> = ({ showToast, triggerRefresh, onRef
           border-radius: 6px;
           font-weight: 500;
           font-size: 0.85rem;
+          white-space: nowrap;
         }
 
         .actions-cell {
           display: flex;
-          gap: 8px;
+          gap: 6px;
           align-items: center;
         }
 
         .btn-sm-action {
-          padding: 6px 12px;
-          font-size: 0.8rem;
+          padding: 6px 10px;
+          font-size: 0.78rem;
           border-radius: var(--border-radius-sm);
         }
 
@@ -543,14 +566,81 @@ export const Alunos: React.FC<AlunosProps> = ({ showToast, triggerRefresh, onRef
           gap: 16px;
         }
 
+        /* Mobile card list */
+        .mobile-cards-list {
+          display: none;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .student-mobile-card {
+          background: rgba(255,255,255,0.02);
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-md);
+          padding: 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .smc-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 8px;
+        }
+
+        .smc-info { display: flex; flex-direction: column; gap: 2px; }
+        .smc-name { font-size: 1rem; font-weight: 700; }
+        .smc-id { font-size: 0.75rem; color: var(--text-muted); }
+
+        .smc-details {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          background: rgba(0,0,0,0.15);
+          border-radius: 8px;
+          padding: 10px;
+        }
+
+        .smc-detail-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 0.875rem;
+        }
+
+        .smc-label { color: var(--text-muted); font-size: 0.8rem; }
+        .smc-value { color: var(--text-main); font-weight: 500; }
+
+        .smc-actions {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
         @media (max-width: 768px) {
           .flex-header {
             flex-direction: column;
             align-items: flex-start;
-            gap: 16px;
+            gap: 12px;
+          }
+          .flex-header .btn {
+            width: 100%;
+            justify-content: center;
           }
           .form-row-2, .form-row-3 {
             grid-template-columns: 1fr;
+          }
+          .desktop-table {
+            display: none;
+          }
+          .mobile-cards-list {
+            display: flex;
+          }
+          .filter-selects {
+            width: 100%;
           }
         }
       `}</style>

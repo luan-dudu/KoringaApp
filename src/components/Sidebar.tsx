@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import logo from '../assets/logo.png';
 
 interface SidebarProps {
@@ -8,6 +8,8 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const menuItems = [
     {
       id: 'dashboard',
@@ -76,49 +78,153 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLog
     }
   ];
 
+  // Close drawer when tab changes
+  const handleTabClick = (id: string) => {
+    setActiveTab(id);
+    setIsMobileMenuOpen(false);
+  };
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobileMenuOpen]);
+
   return (
-    <aside className="sidebar">
-      <div className="sidebar-brand">
-        <div className="brand-logo">
-          <img src={logo} alt="KoringaApp Logo" />
+    <>
+      {/* ===== DESKTOP SIDEBAR ===== */}
+      <aside className="sidebar sidebar-desktop">
+        <div className="sidebar-brand">
+          <div className="brand-logo">
+            <img src={logo} alt="KoringaApp Logo" />
+          </div>
+          <div>
+            <span className="brand-name">KoringaApp</span>
+            <span className="brand-status">Painel de Controle</span>
+          </div>
         </div>
-        <div>
-          <span className="brand-name">KoringaApp</span>
-          <span className="brand-status">Painel de Controle</span>
-        </div>
-      </div>
 
-      <nav className="sidebar-nav">
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            className={`nav-link ${activeTab === item.id ? 'active' : ''}`}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            <span className="nav-label">{item.label}</span>
+        <nav className="sidebar-nav">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleTabClick(item.id)}
+              className={`nav-link ${activeTab === item.id ? 'active' : ''}`}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="sidebar-footer">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <p className="footer-title">KoringaApp v1.0</p>
+            <p className="footer-subtitle">Banco de Dados Local</p>
+          </div>
+          <button onClick={onLogout} className="logout-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Sair
           </button>
-        ))}
-      </nav>
-
-      <div className="sidebar-footer">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <p className="footer-title">KoringaApp v1.0</p>
-          <p className="footer-subtitle">Banco de Dados Local</p>
         </div>
-        <button onClick={onLogout} className="logout-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
+      </aside>
+
+      {/* ===== MOBILE TOP BAR ===== */}
+      <header className="mobile-topbar">
+        <div className="mobile-brand">
+          <div className="mobile-brand-logo">
+            <img src={logo} alt="KoringaApp Logo" />
+          </div>
+          <span className="brand-name" style={{ fontSize: '1.1rem' }}>KoringaApp</span>
+        </div>
+
+        <button
+          className="hamburger-btn"
+          onClick={() => setIsMobileMenuOpen(true)}
+          aria-label="Abrir menu"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
-          Sair
         </button>
-      </div>
+      </header>
+
+      {/* ===== MOBILE DRAWER OVERLAY ===== */}
+      {isMobileMenuOpen && (
+        <div
+          className="drawer-overlay"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* ===== MOBILE DRAWER ===== */}
+      <aside className={`mobile-drawer ${isMobileMenuOpen ? 'open' : ''}`}>
+        <div className="drawer-header">
+          <div className="sidebar-brand" style={{ marginBottom: 0, paddingBottom: 0, border: 'none' }}>
+            <div className="brand-logo">
+              <img src={logo} alt="KoringaApp Logo" />
+            </div>
+            <div>
+              <span className="brand-name">KoringaApp</span>
+              <span className="brand-status">Painel de Controle</span>
+            </div>
+          </div>
+          <button
+            className="drawer-close-btn"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="Fechar menu"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <nav className="sidebar-nav" style={{ marginTop: '24px' }}>
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleTabClick(item.id)}
+              className={`nav-link ${activeTab === item.id ? 'active' : ''}`}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="sidebar-footer" style={{ marginTop: 'auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <p className="footer-title">KoringaApp v1.0</p>
+            <p className="footer-subtitle">Banco de Dados Local</p>
+          </div>
+          <button onClick={onLogout} className="logout-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Sair
+          </button>
+        </div>
+      </aside>
 
       <style>{`
+        /* ===== DESKTOP SIDEBAR ===== */
         .sidebar {
           width: 280px;
+          flex-shrink: 0;
           background: rgba(15, 18, 27, 0.95);
           border-right: 1px solid var(--border-color);
           display: flex;
@@ -127,6 +233,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLog
           min-height: 100vh;
           position: sticky;
           top: 0;
+          height: 100vh;
+          overflow-y: auto;
           z-index: 10;
         }
 
@@ -143,6 +251,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLog
           background: #000000;
           width: 42px;
           height: 42px;
+          min-width: 42px;
           border-radius: var(--border-radius-md);
           display: flex;
           align-items: center;
@@ -198,6 +307,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLog
           font-weight: 500;
           text-align: left;
           transition: var(--transition-smooth);
+          width: 100%;
         }
 
         .nav-link:hover {
@@ -221,6 +331,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLog
           align-items: center;
           justify-content: center;
           transition: var(--transition-smooth);
+          flex-shrink: 0;
         }
 
         .sidebar-footer {
@@ -267,38 +378,162 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLog
           margin-top: 2px;
         }
 
-        @media (max-width: 1024px) {
-          .sidebar {
-            width: 100%;
-            min-height: auto;
-            border-right: none;
-            border-bottom: 1px solid var(--border-color);
-            padding: 16px 20px;
+        /* ===== MOBILE TOP BAR ===== */
+        .mobile-topbar {
+          display: none;
+          position: sticky;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 100;
+          background: rgba(9, 10, 15, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid var(--border-color);
+          padding: 12px 16px;
+          align-items: center;
+          justify-content: space-between;
+          flex-shrink: 0;
+        }
+
+        .mobile-brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .mobile-brand-logo {
+          width: 34px;
+          height: 34px;
+          background: #000;
+          border-radius: 8px;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+
+        .mobile-brand-logo img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .hamburger-btn {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-sm);
+          color: var(--text-main);
+          width: 42px;
+          height: 42px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: var(--transition-smooth);
+          flex-shrink: 0;
+        }
+
+        .hamburger-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: var(--accent-purple);
+        }
+
+        /* ===== MOBILE DRAWER ===== */
+        .drawer-overlay {
+          display: none;
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.65);
+          backdrop-filter: blur(4px);
+          z-index: 200;
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        .mobile-drawer {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: 280px;
+          max-width: 85vw;
+          background: rgba(10, 12, 20, 0.98);
+          backdrop-filter: blur(20px);
+          border-right: 1px solid var(--border-color);
+          z-index: 300;
+          flex-direction: column;
+          padding: 24px 20px;
+          transform: translateX(-100%);
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow-y: auto;
+        }
+
+        .mobile-drawer.open {
+          transform: translateX(0);
+        }
+
+        .drawer-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-bottom: 20px;
+          border-bottom: 1px solid var(--border-color);
+          margin-bottom: 4px;
+        }
+
+        .drawer-close-btn {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-sm);
+          color: var(--text-muted);
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: var(--transition-smooth);
+          flex-shrink: 0;
+        }
+
+        .drawer-close-btn:hover {
+          background: rgba(255, 71, 126, 0.1);
+          border-color: var(--accent-danger);
+          color: var(--accent-danger);
+        }
+
+        /* ===== RESPONSIVE VISIBILITY ===== */
+        @media (max-width: 768px) {
+          .sidebar-desktop {
+            display: none !important;
           }
 
-          .sidebar-brand {
-            margin-bottom: 16px;
-            padding-bottom: 12px;
+          .mobile-topbar {
+            display: flex;
           }
 
-          .sidebar-nav {
-            flex-direction: row;
-            overflow-x: auto;
-            padding-bottom: 8px;
-            gap: 12px;
+          .drawer-overlay {
+            display: block;
           }
 
-          .nav-link {
-            padding: 10px 14px;
-            white-space: nowrap;
-            font-size: 0.85rem;
+          .mobile-drawer {
+            display: flex;
+          }
+        }
+
+        @media (min-width: 769px) {
+          .mobile-topbar {
+            display: none !important;
           }
 
-          .sidebar-footer {
-            display: none;
+          .mobile-drawer {
+            display: none !important;
+          }
+
+          .drawer-overlay {
+            display: none !important;
           }
         }
       `}</style>
-    </aside>
+    </>
   );
 };
